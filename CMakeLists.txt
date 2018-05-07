@@ -359,8 +359,19 @@ else ()
 endif ()
 
 pkg_check_modules (LIBICU_LX icu-lx>=4.8)
+if (NOT LIBICU_LX_FOUND)
+    set (WITH_ICU_LAYOUT OFF)
+endif ()
+
 pkg_check_modules (LIBICU_I18N icu-i18n>=4.8)
+if (NOT LIBICU_I18N_FOUND)
+    set (WITH_ICU_SORT OFF)
+endif ()
+
 pkg_check_modules (LIBTIMIDITY libtimidity>=0.1)
+if (NOT LIBTIMIDITY_FOUND)
+    set (WITH_LIBTIMIDITY OFF)
+endif ()
 
 # direct music
 if (WITH_DIRECT_MUSIC)
@@ -993,6 +1004,7 @@ endif ()
 if (WITH_LIBPNG AND LIBPNG_FOUND)
     list (APPEND C_FLAGS "-DWITH_PNG")
     list (APPEND C_FLAGS "${LIBPNG_CFLAGS}")
+    list (APPEND LIB_DIRS "${LIBPNG_LIBRARY_DIRS}")
 
     if (ENABLE_STATIC)
         list (APPEND LIBS "${LIBPNG_STATIC_LIBRARIES}")
@@ -1073,7 +1085,7 @@ if ((WITH_ICONV GREATER 0) AND ICONV)
         list (APPEND LIBS "iconv")
         if (NOT (WITH_ICONV EQUAL 2))
             list (APPEND C_FLAGS "-I${ICONV}")
-            list (APPEND LIB_DIRS "$with_iconv/lib")
+            list (APPEND LIB_DIRS "${ICONV}/../lib")
         endif ()
     endif ()
 
@@ -1158,6 +1170,10 @@ message (STATUS "linker flags: ${CMAKE_EXE_LINKER_FLAGS}")
 list (REMOVE_DUPLICATES LIBS)
 string (REPLACE ";" " " LIBS_STR "${LIBS}")
 message (STATUS "libraries: ${LIBS_STR}")
+
+list (REMOVE_DUPLICATES LIB_DIRS)
+string (REPLACE ";" " " LIB_DIRS_STR "${LIB_DIRS}")
+message (STATUS "libraries dirs: ${LIB_DIRS_STR}")
 
 # TODO: makedepend, distcc, ccache
 
@@ -2299,5 +2315,7 @@ set (SETTINGSGEN "settings_gen${EXE}")
 include_directories (objs/setting)
 include_directories (objs/lang)
 include_directories (src/3rdparty/squirrel/include)
+link_directories (${LIB_DIRS})
 
 add_executable (${TTD} ${OPENTTD_SRCS})
+target_link_libraries (${TTD} ${LIBS})

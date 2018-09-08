@@ -52,6 +52,7 @@
 #include "gamelog.h"
 #include "linkgraph/linkgraph.h"
 #include "linkgraph/refresh.h"
+#include "framerate_type.h"
 
 #include "table/strings.h"
 
@@ -219,7 +220,7 @@ bool Vehicle::NeedsServicing() const
 		if (replace_when_old && !v->NeedsAutorenewing(c, false)) continue;
 
 		/* Check refittability */
-		uint32 available_cargo_types, union_mask;
+		CargoTypes available_cargo_types, union_mask;
 		GetArticulatedRefitMasks(new_engine, true, &union_mask, &available_cargo_types);
 		/* Is there anything to refit? */
 		if (union_mask != 0) {
@@ -945,8 +946,15 @@ void CallVehicleTicks()
 
 	RunVehicleDayProc();
 
-	Station *st;
-	FOR_ALL_STATIONS(st) LoadUnloadStation(st);
+	{
+		PerformanceMeasurer framerate(PFE_GL_ECONOMY);
+		Station *st;
+		FOR_ALL_STATIONS(st) LoadUnloadStation(st);
+	}
+	PerformanceAccumulator::Reset(PFE_GL_TRAINS);
+	PerformanceAccumulator::Reset(PFE_GL_ROADVEHS);
+	PerformanceAccumulator::Reset(PFE_GL_SHIPS);
+	PerformanceAccumulator::Reset(PFE_GL_AIRCRAFT);
 
 	Vehicle *v;
 	FOR_ALL_VEHICLES(v) {

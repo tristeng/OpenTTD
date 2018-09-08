@@ -2750,6 +2750,13 @@ STR_ABOUT_ORIGINAL_COPYRIGHT                                    :{BLACK}Pôvodn�
 STR_ABOUT_VERSION                                               :{BLACK}OpenTTD verzia {REV}
 STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT} 2002-2018 team OpenTTD
 
+# Framerate display window
+############ Leave those lines in this order!!
+############ End of leave-in-this-order
+############ Leave those lines in this order!!
+############ End of leave-in-this-order
+
+
 # Save/load game/scenario
 STR_SAVELOAD_SAVE_CAPTION                                       :{WHITE}Uložiť hru
 STR_SAVELOAD_LOAD_CAPTION                                       :{WHITE}Nahrať hru
@@ -3041,8 +3048,6 @@ STR_TOWN_POPULATION                                             :{BLACK}Svetová
 STR_TOWN_VIEW_TOWN_CAPTION                                      :{WHITE}{TOWN}
 STR_TOWN_VIEW_CITY_CAPTION                                      :{WHITE}{TOWN} (Mesto)
 STR_TOWN_VIEW_POPULATION_HOUSES                                 :{BLACK}Obyvateľstvo: {ORANGE}{COMMA}{BLACK}  Domov: {ORANGE}{COMMA}
-STR_TOWN_VIEW_PASSENGERS_LAST_MONTH_MAX                         :{BLACK}Cestujúci posledný mesiac: {ORANGE}{COMMA}{BLACK}  max: {ORANGE}{COMMA}
-STR_TOWN_VIEW_MAIL_LAST_MONTH_MAX                               :{BLACK}Pošta posledný mesiac: {ORANGE}{COMMA}{BLACK}  max: {ORANGE}{COMMA}
 STR_TOWN_VIEW_CARGO_FOR_TOWNGROWTH                              :{BLACK}Tovar potrebný k rozrastu mesta:
 STR_TOWN_VIEW_CARGO_FOR_TOWNGROWTH_REQUIRED_GENERAL             :{ORANGE}{STRING}{RED} potrebný
 STR_TOWN_VIEW_CARGO_FOR_TOWNGROWTH_REQUIRED_WINTER              :{ORANGE}{STRING}{BLACK} potrebné v zime

@@ -77,6 +77,7 @@ set_default() {
 	enable_builtin_depend="1"
 	with_makedepend="0"
 	with_direct_music="1"
+	with_xaudio2="1"
 	with_sort="1"
 	with_iconv="1"
 	with_midi=""
@@ -87,6 +88,7 @@ set_default() {
 	with_icu_layout="1"
 	with_icu_sort="1"
 	static_icu="0"
+	with_uniscribe="1"
 	with_threads="1"
 	with_distcc="1"
 	with_ccache="1"
@@ -152,6 +154,7 @@ set_default() {
 		enable_builtin_depend
 		with_makedepend
 		with_direct_music
+		with_xaudio2
 		with_sort
 		with_iconv
 		with_midi
@@ -162,6 +165,7 @@ set_default() {
 		with_icu_layout
 		with_icu_sort
 		static_icu
+		with_uniscribe
 		with_threads
 		with_distcc
 		with_ccache
@@ -399,6 +403,10 @@ detect_params() {
 			--static-libicu)              static_icu="1";;
 			--static-libicu=*)            static_icu="$optarg";;
 
+			--with-uniscribe)             with_uniscribe="2";;
+			--without-uniscribe)          with_uniscribe="0";;
+			--with-uniscribe=*)           with_uniscribe="$optarg";;
+
 			--disable-builtin-depend)     enable_builtin_depend="0";;
 			--enable-builtin-depend)      enable_builtin_depend="2";;
 			--enable-builtin-depend=*)    enable_builtin_depend="$optarg";;
@@ -410,6 +418,10 @@ detect_params() {
 			--with-direct-music)          with_direct_music="2";;
 			--without-direct-music)       with_direct_music="0";;
 			--with-direct-music=*)        with_direct_music="$optarg";;
+
+			--with-xaudio2)               with_xaudio2="2";;
+			--without-xaudio2)            with_xaudio2="0";;
+			--with-xaudio2=*)             with_xaudio2="$optarg";;
 
 			--with-sort)                  with_sort="2";;
 			--without-sort)               with_sort="0";;
@@ -849,6 +861,28 @@ check_params() {
 		fi
 	fi
 
+	if [ "$with_uniscribe" != "0" ]; then
+		if [ "$os" != "MINGW" ]; then
+			if [ "$with_uniscribe" != "1" ]; then
+				log 1 "configure: error: Uniscribe is only supported on native Win32 targets"
+				exit 1
+			fi
+			with_uniscribe="0"
+
+			log 1 "checking Uniscribe text layout... not Windows, skipping"
+		else
+			log 1 "checking Uniscribe text layout... found"
+
+			# Don't use ICU unless forced.
+			if [ "$with_icu_layout" = "1" ]; then
+				with_icu_layout="0"
+			fi
+			if [ "$with_icu_sort" = "1" ]; then
+				with_icu_sort="0"
+			fi
+		fi
+	fi
+
 	detect_xdg_basedir
 	detect_png
 	detect_freetype
@@ -868,6 +902,20 @@ check_params() {
 			log 1 "checking direct-music... not Windows, skipping"
 		else
 			check_direct_music
+		fi
+	fi
+
+	if [ "$with_xaudio2" != "0" ]; then
+		if [ "$os" != "MINGW" ] && [ "$os" != "CYGWIN" ]; then
+			if [ "$with_xaudio2" != "1" ]; then
+				log 1 "configure: error: xaudio2 is only supported on Win32 targets"
+				exit 1
+			fi
+			with_xaudio2="0"
+
+			log 1 "checking xaudio2... not Windows, skipping"
+		else
+			check_xaudio2
 		fi
 	fi
 
@@ -1181,14 +1229,14 @@ make_compiler_cflags() {
 	# $5 - name of the features variable
 
 	# Get the compiler to tell us who it is
-	compiler="`$1 --version | head -n1 | cut -d' ' -f1`"
+	version_line="`$1 --version | head -n1`"
 
 	eval eval "flags=\\\$$2"
 	eval eval "cxxflags=\\\$$3"
 	eval eval "ldflags=\\\$$4"
 	eval eval "features=\\\$$5"
 
-	if [ "$compiler" = "icc" ]; then
+	if [ `echo "$version_line" | cut -d' ' -f1` = "icc" ]; then
 		# Enable some things only for certain ICC versions
 		cc_version=`$1 -dumpversion | cut -c 1-4 | sed s@\\\.@@g`
 
@@ -1275,7 +1323,7 @@ make_compiler_cflags() {
 				features="$features lto"
 			fi
 		fi
-	elif [ "$compiler" = "clang" ]; then
+	elif echo "$version_line" | grep -q "clang"; then
 		# Enable some things only for certain clang versions
 		cc_version="`$1 -v 2>&1 | head -n 1 | sed s@[^0-9]@@g | cut -c 1-2`"
 
@@ -1733,7 +1781,7 @@ make_cflags_and_ldflags() {
 		CFLAGS="$CFLAGS `$freetype_config --cflags | tr '\n\r' '  '`"
 
 		if [ "$enable_static" != "0" ]; then
-			LIBS="$LIBS `$freetype_config --libs --static | tr '\n\r' '  '`"
+			LIBS="$LIBS `$freetype_config --libs --static | tr '\n\r' '  '` -lfreetype"
 		else
 			LIBS="$LIBS `$freetype_config --libs | tr '\n\r' '  '`"
 		fi
@@ -1761,6 +1809,10 @@ make_cflags_and_ldflags() {
 		fi
 	fi
 
+	if [ "$with_uniscribe" != "0" ]; then
+		CFLAGS="$CFLAGS -DWITH_UNISCRIBE"
+		LIBS="$LIBS -lusp10"
+	fi
 
 	if [ "$with_direct_music" != "0" ]; then
 		CFLAGS="$CFLAGS -DWIN32_ENABLE_DIRECTMUSIC_SUPPORT"
@@ -1770,6 +1822,10 @@ make_cflags_and_ldflags() {
 		if [ $cc_version -ge 400 ]; then
 			CFLAGS="$CFLAGS -Wno-non-virtual-dtor"
 		fi
+	fi
+
+	if [ "$with_xaudio2" != "0" ]; then
+		CFLAGS="$CFLAGS -DWITH_XAUDIO2"
 	fi
 
 	if [ -n "$libtimidity_config" ]; then
@@ -2139,9 +2195,7 @@ check_direct_music() {
 	echo "
 		#include <windows.h>
 		#include <dmksctrl.h>
-		#include <dmusici.h>
 		#include <dmusicc.h>
-		#include <dmusicf.h>
 		int main(int argc, char *argv[]) { }" > direct_music.test.c
 	$cxx_host $CFLAGS direct_music.test.c -o direct_music.test 2> /dev/null
 	res=$?
@@ -2157,6 +2211,35 @@ check_direct_music() {
 		log 1 "checking direct-music... not found"
 	else
 		log 1 "checking direct-music... found"
+	fi
+}
+
+check_xaudio2() {
+	echo "
+		#include <windows.h>
+
+		#undef NTDDI_VERSION
+		#undef _WIN32_WINNT
+
+		#define NTDDI_VERSION    NTDDI_WIN8
+		#define _WIN32_WINNT	 _WIN32_WINNT_WIN8
+
+		#include <xaudio2.h>
+		int main(int argc, char *argv[]) { }" > xaudio2.test.c
+	$cxx_host $CFLAGS xaudio2.test.c -o xaudio2.test 2> /dev/null
+	res=$?
+	rm -f xaudio2.test.c xaudio2.test
+
+	if [ "$res" != "0" ]; then
+		if [ "$with_xaudio2" != "1" ]; then
+			log 1 "configure: error: xaudio2 is not available on this system"
+			exit 1
+		fi
+		with_xaudio2="0"
+
+		log 1 "checking xaudio2... not found"
+	else
+		log 1 "checking xaudio2... found"
 	fi
 }
 
@@ -2582,6 +2665,11 @@ detect_library() {
 		eval "res=\$$2"
 		if [ -z "$res" ]; then
 			log 2 "  trying /mingw/include/$4$5... no"
+			eval "$2=`ls -1 /mingw$cpu_type/include/$4*.h 2>/dev/null | egrep \"\/$5\$\"`"
+		fi
+		eval "res=\$$2"
+		if [ -z "$res" ]; then
+			log 2 "  trying /mingw$cpu_type/include/$4$5... no"
 			eval "$2=`ls -1 /opt/local/include/$4*.h 2>/dev/null | egrep \"\/$5\$\"`"
 		fi
 		eval "res=\$$2"
@@ -2630,6 +2718,11 @@ detect_library() {
 			eval "res=\$$2"
 			if [ -z "$res" ]; then
 				log 2 "  trying /mingw/lib/$3... no"
+				eval "$2=`ls /mingw$cpu_type/lib/*.a 2>/dev/null | egrep \"\/$3\$\"`"
+			fi
+			eval "res=\$$2"
+			if [ -z "$res" ]; then
+				log 2 "  trying /mingw$cpu_type/lib/$3... no"
 				log 1 "configure: error: $2 couldn't be found"
 				log 1 "configure: error: you requested a static link, but I can't find $3"
 

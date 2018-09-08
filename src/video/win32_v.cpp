@@ -23,6 +23,7 @@
 #include "../progress.h"
 #include "../window_gui.h"
 #include "../window_func.h"
+#include "../framerate_type.h"
 #include "win32_v.h"
 #include <windows.h>
 #include <imm.h>
@@ -338,13 +339,13 @@ bool VideoDriver_Win32::MakeWindow(bool full_screen)
 		if (_wnd.main_wnd != NULL) {
 			if (!_window_maximize) SetWindowPos(_wnd.main_wnd, 0, 0, 0, w, h, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
 		} else {
-			TCHAR Windowtitle[50];
 			int x = (GetSystemMetrics(SM_CXSCREEN) - w) / 2;
 			int y = (GetSystemMetrics(SM_CYSCREEN) - h) / 2;
 
-			_sntprintf(Windowtitle, lengthof(Windowtitle), _T("OpenTTD %s"), MB_TO_WIDE(_openttd_revision));
+			char window_title[64];
+			seprintf(window_title, lastof(window_title), "OpenTTD %s", _openttd_revision);
 
-			_wnd.main_wnd = CreateWindow(_T("OTTD"), Windowtitle, style, x, y, w, h, 0, 0, GetModuleHandle(NULL), 0);
+			_wnd.main_wnd = CreateWindow(_T("OTTD"), MB_TO_WIDE(window_title), style, x, y, w, h, 0, 0, GetModuleHandle(NULL), 0);
 			if (_wnd.main_wnd == NULL) usererror("CreateWindow failed");
 			ShowWindow(_wnd.main_wnd, showstyle);
 		}
@@ -359,6 +360,8 @@ bool VideoDriver_Win32::MakeWindow(bool full_screen)
 /** Do palette animation and blit to the window. */
 static void PaintWindow(HDC dc)
 {
+	PerformanceMeasurer framerate(PFE_VIDEO);
+
 	HDC dc2 = CreateCompatibleDC(dc);
 	HBITMAP old_bmp = (HBITMAP)SelectObject(dc2, _wnd.dib_sect);
 	HPALETTE old_palette = SelectPalette(dc, _wnd.gdi_palette, FALSE);

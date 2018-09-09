@@ -815,6 +815,10 @@ STR_NEWS_COMPANY_BANKRUPT_TITLE                                 :{BIG_FONT}{BLAC
 STR_NEWS_COMPANY_BANKRUPT_DESCRIPTION                           :{BIG_FONT}{BLACK}{RAW_STRING} has been closed down by creditors and all assets sold off!
 STR_NEWS_COMPANY_LAUNCH_TITLE                                   :{BIG_FONT}{BLACK}New transport company launched!
 STR_NEWS_COMPANY_LAUNCH_DESCRIPTION                             :{BIG_FONT}{BLACK}{RAW_STRING} starts construction near {TOWN}!
+STR_NEWS_COMPANY_STOCK_SPLIT_TITLE                              :{BIG_FONT}{BLACK}Investor update - stock split!
+STR_NEWS_COMPANY_STOCK_SPLIT_DESCRIPTION                        :{BIG_FONT}{BLACK}{RAW_STRING} stock reaches {CURRENCY_LONG} per share and has split {NUM} for 1! Investors praise {RAW_STRING}.
+STR_NEWS_COMPANY_STOCK_MERGE_TITLE                              :{BIG_FONT}{BLACK}Investor update - stock merge!
+STR_NEWS_COMPANY_STOCK_MERGE_DESCRIPTION                        :{BIG_FONT}{BLACK}{RAW_STRING} stock has merged 1 for {NUM} on decreased earnings! Investors demand answers from {RAW_STRING}.
 STR_NEWS_MERGER_TAKEOVER_TITLE                                  :{BIG_FONT}{BLACK}{RAW_STRING} has been taken over by {RAW_STRING}!
 STR_PRESIDENT_NAME_MANAGER                                      :{BLACK}{PRESIDENT_NAME}{}(Manager)
 

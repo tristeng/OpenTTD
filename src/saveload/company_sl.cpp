@@ -293,6 +293,8 @@ static const SaveLoad _company_desc[] = {
 	SLE_CONDVAR(CompanyProperties, terraform_limit,       SLE_UINT32,                156, SL_MAX_VERSION),
 	SLE_CONDVAR(CompanyProperties, clear_limit,           SLE_UINT32,                156, SL_MAX_VERSION),
 	SLE_CONDVAR(CompanyProperties, tree_limit,            SLE_UINT32,                175, SL_MAX_VERSION),
+	// TODO: need current version!
+	SLE_CONDVAR(CompanyProperties, total_shares,          SLE_UINT32,                199, SL_MAX_VERSION),
 
 	SLE_END()
 };
@@ -353,6 +355,8 @@ static const SaveLoad _company_economy_desc[] = {
 	SLE_CONDARR(CompanyEconomyEntry, delivered_cargo,     SLE_UINT32, 32,           170, 198),
 	SLE_CONDARR(CompanyEconomyEntry, delivered_cargo,     SLE_UINT32, NUM_CARGO,    199, SL_MAX_VERSION),
 	    SLE_VAR(CompanyEconomyEntry, performance_history, SLE_INT32),
+	// TODO: need current version!
+	SLE_CONDVAR(CompanyEconomyEntry, share_price,         SLE_INT64,                199, SL_MAX_VERSION),
 
 	SLE_END()
 };

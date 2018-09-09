@@ -550,8 +550,15 @@ Company *DoStartupNewCompany(bool is_ai, CompanyID company = INVALID_COMPANY)
 	ResetCompanyLivery(c);
 	_company_colours[c->index] = (Colours)c->colour;
 
-	c->money = c->current_loan = (100000ll * _economy.inflation_prices >> 16) / 50000 * 50000;
+	// start with a 50K loan and 50K of investor money
+	c->money = c->current_loan = (50000ll * _economy.inflation_prices >> 16) / 25000 * 25000;
 
+	// setup the shares of the company - 5k shares at a price of 10 each
+	c->total_shares = 5000;
+	c->cur_economy.share_price = (10ll * _economy.inflation_prices >> 16) / 5 * 5;
+	c->money += c->total_shares * c->cur_economy.share_price;
+
+	// TODO: divvy up shares, 1k shares to player, 4k shares public investors
 	c->share_owners[0] = c->share_owners[1] = c->share_owners[2] = c->share_owners[3] = INVALID_OWNER;
 
 	c->avail_railtypes = GetCompanyRailtypes(c->index);

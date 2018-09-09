@@ -676,7 +676,7 @@ static CallBackFunction MenuClickGoal(int index)
 
 static CallBackFunction ToolbarGraphsClick(Window *w)
 {
-	PopupMainToolbMenu(w, WID_TN_GRAPHS, STR_GRAPH_MENU_OPERATING_PROFIT_GRAPH, (_toolbar_mode == TB_NORMAL) ? 6 : 8);
+	PopupMainToolbMenu(w, WID_TN_GRAPHS, STR_GRAPH_MENU_OPERATING_PROFIT_GRAPH, (_toolbar_mode == TB_NORMAL) ? 7 : 9);
 	return CBF_NONE;
 }
 
@@ -695,9 +695,10 @@ static CallBackFunction MenuClickGraphs(int index)
 		case 3: ShowPerformanceHistoryGraph(); break;
 		case 4: ShowCompanyValueGraph();       break;
 		case 5: ShowCargoPaymentRates();       break;
+        case 6: ShowSharePriceGraph();         break;
 		/* functions for combined graphs/league button */
-		case 6: ShowCompanyLeagueTable();      break;
-		case 7: ShowPerformanceRatingDetail(); break;
+		case 7: ShowCompanyLeagueTable();      break;
+		case 8: ShowPerformanceRatingDetail(); break;
 	}
 	return CBF_NONE;
 }

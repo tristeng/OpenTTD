@@ -26,6 +26,7 @@ struct CompanyEconomyEntry {
 	CargoArray delivered_cargo; ///< The amount of delivered cargo.
 	int32 performance_history;  ///< Company score (scale 0-1000)
 	Money company_value;        ///< The value of the company.
+	Money share_price;          ///< The share price.
 };
 
 struct CompanyInfrastructure {
@@ -73,6 +74,7 @@ struct CompanyProperties {
 	TileIndex last_build_coordinate; ///< Coordinate of the last build thing by this company.
 
 	OwnerByte share_owners[4];       ///< Owners of the 4 shares of the company. #INVALID_OWNER if nobody has bought them yet.
+	uint32 total_shares;             ///< Total shares for this company
 
 	Year inaugurated_year;           ///< Year of starting the company.
 
@@ -171,6 +173,7 @@ struct Company : CompanyPool::PoolItem<&_company_pool>, CompanyProperties {
 #define FOR_ALL_COMPANIES(var) FOR_ALL_COMPANIES_FROM(var, 0)
 
 Money CalculateCompanyValue(const Company *c, bool including_loan = true);
+Money CalculateCompanySharePrice(const Company *c);
 
 extern uint _next_competitor_start;
 extern uint _cur_company_tick_index;

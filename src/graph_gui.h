@@ -20,5 +20,6 @@ void ShowCompanyValueGraph();
 void ShowCargoPaymentRates();
 void ShowCompanyLeagueTable();
 void ShowPerformanceRatingDetail();
+void ShowSharePriceGraph();
 
 #endif /* GRAPH_GUI_H */

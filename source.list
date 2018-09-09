@@ -338,6 +338,7 @@ station_gui.h
 station_type.h
 statusbar_gui.h
 stdafx.h
+stock_exchange.h
 story_base.h
 story_type.h
 strgen/strgen.h

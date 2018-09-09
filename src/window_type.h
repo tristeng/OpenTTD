@@ -693,6 +693,12 @@ enum WindowClass {
 	 */
 	WC_FRAMETIME_GRAPH,
 
+	/**
+	 * Share price window; %Window numbers:
+	 *   - 0 = #SharePriceWidgets
+	 */
+	WC_SHARE_PRICE,
+
 	WC_INVALID = 0xFFFF, ///< Invalid window.
 };
 

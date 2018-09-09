@@ -1582,3 +1582,52 @@ void ShowPerformanceRatingDetail()
 {
 	AllocateWindowDescFront<PerformanceRatingDetailWindow>(&_performance_rating_detail_desc, 0);
 }
+
+/*********************/
+/* SHARE PRICE GRAPH */
+/*********************/
+
+struct SharePriceGraphWindow : BaseGraphWindow {
+	SharePriceGraphWindow(WindowDesc *desc, WindowNumber window_number) :
+            BaseGraphWindow(desc, WID_CV_GRAPH, STR_JUST_CURRENCY_SHORT)
+    {
+        this->InitializeWindow(window_number);
+    }
+
+    virtual OverflowSafeInt64 GetGraphData(const Company *c, int j)
+    {
+        return c->old_economy[j].share_price;
+    }
+};
+
+static const NWidgetPart _nested_share_price_graph_widgets[] = {
+    NWidget(NWID_HORIZONTAL),
+        NWidget(WWT_CLOSEBOX, COLOUR_GREY),
+        NWidget(WWT_CAPTION, COLOUR_GREY), SetDataTip(STR_GRAPH_SHARE_PRICE_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
+        NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_CV_KEY_BUTTON), SetMinimalSize(50, 0), SetMinimalTextLines(1, WD_FRAMERECT_TOP + WD_FRAMERECT_BOTTOM + 2), SetDataTip(STR_GRAPH_KEY_BUTTON, STR_GRAPH_KEY_TOOLTIP),
+        NWidget(WWT_SHADEBOX, COLOUR_GREY),
+        NWidget(WWT_DEFSIZEBOX, COLOUR_GREY),
+        NWidget(WWT_STICKYBOX, COLOUR_GREY),
+    EndContainer(),
+    NWidget(WWT_PANEL, COLOUR_GREY, WID_CV_BACKGROUND),
+        NWidget(NWID_HORIZONTAL),
+            NWidget(WWT_EMPTY, COLOUR_GREY, WID_CV_GRAPH), SetMinimalSize(576, 224), SetFill(1, 1), SetResize(1, 1),
+            NWidget(NWID_VERTICAL),
+            NWidget(NWID_SPACER), SetFill(0, 1), SetResize(0, 1),
+            NWidget(WWT_RESIZEBOX, COLOUR_GREY, WID_CV_RESIZE),
+            EndContainer(),
+        EndContainer(),
+    EndContainer(),
+};
+
+static WindowDesc _share_price_desc(
+    WDP_AUTO, "graph_share_price", 0, 0,
+    WC_SHARE_PRICE, WC_NONE,
+    0,
+	_nested_share_price_graph_widgets, lengthof(_nested_share_price_graph_widgets)
+);
+
+void ShowSharePriceGraph()
+{
+	AllocateWindowDescFront<SharePriceGraphWindow>(&_share_price_desc, 0);
+}

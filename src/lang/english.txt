@@ -417,6 +417,7 @@ STR_GRAPH_MENU_DELIVERED_CARGO_GRAPH                            :Delivered cargo
 STR_GRAPH_MENU_PERFORMANCE_HISTORY_GRAPH                        :Performance history graph
 STR_GRAPH_MENU_COMPANY_VALUE_GRAPH                              :Company value graph
 STR_GRAPH_MENU_CARGO_PAYMENT_RATES                              :Cargo payment rates
+STR_GRAPH_MENU_SHARE_PRICE                                      :Share price
 ############ range ends here
 
 ############ range for company league menu starts
@@ -634,6 +635,9 @@ STR_PERFORMANCE_DETAIL_CARGO_TOOLTIP                            :{BLACK}Number o
 STR_PERFORMANCE_DETAIL_MONEY_TOOLTIP                            :{BLACK}Amount of money this company has in the bank
 STR_PERFORMANCE_DETAIL_LOAN_TOOLTIP                             :{BLACK}The amount of money this company has taken on loan
 STR_PERFORMANCE_DETAIL_TOTAL_TOOLTIP                            :{BLACK}Total points out of possible points
+
+# stock price detail window
+STR_GRAPH_SHARE_PRICE_CAPTION                                   :{WHITE}Share price
 
 # Music window
 STR_MUSIC_JAZZ_JUKEBOX_CAPTION                                  :{WHITE}Jazz Jukebox

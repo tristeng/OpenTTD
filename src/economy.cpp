@@ -143,6 +143,36 @@ Money CalculateCompanyValue(const Company *c, bool including_loan)
 }
 
 /**
+ * Calculates the company share price (calculation borrowed from freerails)
+ * share price = [company value + 5 * profit in last year] / [outstanding shares + 0.5 shares owned by other players/companies]
+ * @param c the company in question
+ * @return share price
+ */
+Money CalculateCompanySharePrice(const Company *c)
+{
+	Money value = CalculateCompanyValue(c);
+
+	// determine profit in last 4 quarters, including current
+	Money profit = c->cur_economy.income - c->cur_economy.expenses;
+	for (uint quarter = 0; quarter < 3; quarter++) {
+		profit += (c->old_economy[quarter].income - c->old_economy[quarter].expenses);
+	}
+
+	// TODO determine how the shares are distributed, need public shares and number of shares owned by other players
+	uint32 num_public_shares = c->total_shares;
+	uint32 num_other_player_shares = 0;
+
+	// Stock price = [Net worth + 5 * profit last year] / [ shares owned by public + 0.5 shares owned by other players]
+
+	// perform calculation
+	Money share_price = (value + 5 * profit) / (num_public_shares + num_other_player_shares / 2);
+
+	// TODO need to set the floor to 1?
+
+	return share_price;
+}
+
+/**
  * if update is set to true, the economy is updated with this score
  *  (also the house is updated, should only be true in the on-tick event)
  * @param update the economy with calculated score
@@ -275,6 +305,7 @@ int UpdateCompanyRatingAndValue(Company *c, bool update)
 		c->old_economy[0].performance_history = score;
 		UpdateCompanyHQ(c->location_of_HQ, score);
 		c->old_economy[0].company_value = CalculateCompanyValue(c);
+		c->old_economy[0].share_price = CalculateCompanySharePrice(c);
 	}
 
 	SetWindowDirty(WC_PERFORMANCE_DETAIL, 0);
@@ -713,6 +744,7 @@ static void CompaniesGenStatistics()
 	SetWindowDirty(WC_PERFORMANCE_HISTORY, 0);
 	SetWindowDirty(WC_COMPANY_VALUE, 0);
 	SetWindowDirty(WC_COMPANY_LEAGUE, 0);
+	SetWindowDirty(WC_SHARE_PRICE, 0);
 }
 
 /**

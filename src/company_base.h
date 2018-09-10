@@ -173,7 +173,8 @@ struct Company : CompanyPool::PoolItem<&_company_pool>, CompanyProperties {
 #define FOR_ALL_COMPANIES(var) FOR_ALL_COMPANIES_FROM(var, 0)
 
 Money CalculateCompanyValue(const Company *c, bool including_loan = true);
-Money CalculateCompanySharePrice(Company *c, bool update);
+Money CalculateCompanySharePrice(const Company *c);
+void UpdateCompanyShareStructure(Company *c);
 
 extern uint _next_competitor_start;
 extern uint _cur_company_tick_index;

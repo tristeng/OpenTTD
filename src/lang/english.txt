@@ -636,7 +636,7 @@ STR_PERFORMANCE_DETAIL_MONEY_TOOLTIP                            :{BLACK}Amount o
 STR_PERFORMANCE_DETAIL_LOAN_TOOLTIP                             :{BLACK}The amount of money this company has taken on loan
 STR_PERFORMANCE_DETAIL_TOTAL_TOOLTIP                            :{BLACK}Total points out of possible points
 
-# stock price detail window
+# share price detail window
 STR_GRAPH_SHARE_PRICE_CAPTION                                   :{WHITE}Share price
 
 # Music window
@@ -3273,6 +3273,14 @@ STR_FINANCES_BORROW_TOOLTIP                                     :{BLACK}Increase
 STR_FINANCES_REPAY_BUTTON                                       :{BLACK}Repay {CURRENCY_LONG}
 STR_FINANCES_REPAY_TOOLTIP                                      :{BLACK}Repay part of loan. Ctrl+Click repays as much loan as possible
 STR_FINANCES_INFRASTRUCTURE_BUTTON                              :{BLACK}Infrastructure
+STR_FINANCES_SHARES_OUTSTANDING_TITLE                           :{BLACK}Shares Outstanding
+STR_FINANCES_SHARES_OUTSTANDING                                 :{BLACK}{COMMA}
+STR_FINANCES_SHARE_PRICE_TITLE                                  :{BLACK}Share Price
+STR_FINANCES_SHARE_PRICE                                        :{BLACK}{CURRENCY_LONG}
+STR_FINANCES_ISSUE_SHARES_BUTTON                                :{BLACK}Issue {COMMA} shares
+STR_FINANCES_ISSUE_SHARES_TOOLTIP                               :{BLACK}Issue more shares to the public to raise money.
+STR_FINANCES_BUYBACK_SHARES_BUTTON                              :{BLACK}Buyback {COMMA} shares
+STR_FINANCES_BUYBACK_SHARES_TOOLTIP                             :{BLACK}Buyback publicly held shares.
 
 # Company view
 STR_COMPANY_VIEW_CAPTION                                        :{WHITE}{COMPANY} {BLACK}{COMPANY_NUM}
@@ -3287,6 +3295,9 @@ STR_COMPANY_VIEW_AIRCRAFT                                       :{WHITE}{COMMA} 
 STR_COMPANY_VIEW_SHIPS                                          :{WHITE}{COMMA} ship{P "" s}
 STR_COMPANY_VIEW_VEHICLES_NONE                                  :{WHITE}None
 STR_COMPANY_VIEW_COMPANY_VALUE                                  :{GOLD}Company value: {WHITE}{CURRENCY_LONG}
+STR_COMPANY_VIEW_SHARE_PRICE                                    :{GOLD}Share price: {WHITE}{CURRENCY_LONG}
+STR_COMPANY_VIEW_TOTAL_SHARES                                   :{GOLD}Shares outstanding: {WHITE}{COMMA}
+STR_COMPANY_VIEW_MARKET_CAP                                     :{GOLD}Market capitalization: {WHITE}{CURRENCY_LONG}
 STR_COMPANY_VIEW_SHARES_OWNED_BY                                :{WHITE}({COMMA}% owned by {COMPANY})
 STR_COMPANY_VIEW_INFRASTRUCTURE                                 :{GOLD}Infrastructure:
 STR_COMPANY_VIEW_INFRASTRUCTURE_RAIL                            :{WHITE}{COMMA} rail piece{P "" s}
@@ -4236,6 +4247,10 @@ STR_ERROR_CAN_T_BUILD_COMPANY_HEADQUARTERS                      :{WHITE}Can't bu
 STR_ERROR_CAN_T_BUY_25_SHARE_IN_THIS                            :{WHITE}Can't buy 25% share in this company...
 STR_ERROR_CAN_T_SELL_25_SHARE_IN                                :{WHITE}Can't sell 25% share in this company...
 STR_ERROR_PROTECTED                                             :{WHITE}This company is not old enough to trade shares yet...
+STR_ERROR_CAN_T_ISSUE_SHARES                                    :{WHITE}Can't issue any more shares...
+STR_ERROR_CAN_T_BUYBACK_SHARES                                  :{WHITE}Can't buyback any more shares...
+STR_ERROR_SHARE_PRICE_TOO_LOW                                   :{WHITE}... share price must be greater than {CURRENCY_LONG}
+STR_ERROR_NO_SHARES_AVAILABLE                                   :{WHITE}... no public shares to purchase
 
 # Town related errors
 STR_ERROR_CAN_T_GENERATE_TOWN                                   :{WHITE}Can't build any towns

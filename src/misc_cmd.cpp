@@ -273,3 +273,102 @@ CommandCost CmdGiveMoney(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	/* Subtract money from local-company */
 	return amount;
 }
+
+/**
+ * Issue more shares of your company.
+ * @param tile unused
+ * @param flags operation to perform
+ * @param p1 amount of shares to issue, multitude of SHARE_INTERVAL. Only used when p2 == 2.
+ * @param p2 when 0: issues SHARE_INTERVAL
+ *           when 1: not used
+ *           when 2: issues the amount specified in p1
+ * @param text unused
+ * @return the cost of this operation or an error
+ */
+CommandCost CmdIssueShares(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+{
+	Company *c = Company::Get(_current_company);
+
+	Money share_price = CalculateCompanySharePrice(c);
+
+	// TODO: we should calculate a credit rating and use that instead of share price...
+	if (share_price < 10) {
+		SetDParam(0, 10);
+		return_cmd_error(STR_ERROR_SHARE_PRICE_TOO_LOW);
+	}
+
+	uint32 shares;
+	switch (p2) {
+		default: return CMD_ERROR; // Invalid method
+		case 0: // issue SHARE_INTERVAL shares
+			shares = SHARE_INTERVAL;
+			break;
+		case 2: // issue the given amount of shares
+			if ((int32)p1 < SHARE_INTERVAL || p1 % SHARE_INTERVAL != 0) return CMD_ERROR;
+			shares = p1;
+			break;
+	}
+
+	// determine the issue share price - it will be less due to dilution!
+	Money new_share_price = RoundDivSU(share_price * c->total_shares, (c->total_shares + shares));
+
+	Money money = new_share_price * shares;
+
+	/* Overflow protection */
+	if (c->money + c->current_loan + money < c->money) return CMD_ERROR;
+
+	if (flags & DC_EXEC) {
+		c->money        += money;
+		c->total_shares += shares;
+		InvalidateCompanyWindows(c);
+	}
+
+	return CommandCost(EXPENSES_OTHER);
+}
+
+/**
+ * Buyback outstanding shares of your company.
+ * @param tile unused
+ * @param flags operation to perform
+ * @param p1 number of shares to buy back, multitude of SHARE_INTERVAL. Only used when p2 == 2.
+ * @param p2 when 0: buys back SHARE_INTERVAL
+ *           when 1: not used
+ *           when 2: buys back the amount specified in p1
+ * @param text unused
+ * @return the cost of this operation or an error
+ */
+CommandCost CmdBuybackShares(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+{
+	Company *c = Company::Get(_current_company);
+
+	Money share_price = CalculateCompanySharePrice(c);
+
+	// TODO: if players own shares, we will need to handle that at some point
+	if (c->total_shares == 0 || share_price < 1) return_cmd_error(STR_ERROR_NO_SHARES_AVAILABLE);
+
+	uint32 shares;
+	switch (p2) {
+		default: return CMD_ERROR; // Invalid method
+		case 0: // buyback SHARE_INTERVAL shares
+			shares = SHARE_INTERVAL;
+			break;
+		case 2: // buyback the given amount of shares
+			if ((int32)p1 < SHARE_INTERVAL || p1 % SHARE_INTERVAL != 0) return CMD_ERROR;
+			shares = p1;
+			break;
+	}
+
+	Money money = share_price * shares;
+	if (c->money < money) {
+		SetDParam(0, money);
+		return_cmd_error(STR_ERROR_CURRENCY_REQUIRED);
+	}
+
+	if (flags & DC_EXEC) {
+		c->money        -= money;
+		c->total_shares -= shares;
+		InvalidateCompanyWindows(c);
+	}
+
+	return CommandCost(EXPENSES_OTHER);
+}

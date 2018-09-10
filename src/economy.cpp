@@ -149,9 +149,12 @@ Money CalculateCompanyValue(const Company *c, bool including_loan)
  * @param update if true we will update the share structure to keep the share price in bounds [2, 100]
  * @return share price
  */
-Money CalculateCompanySharePrice(Company *c, bool update)
+Money CalculateCompanySharePrice(const Company *c)
 {
-	Money value = CalculateCompanyValue(c);
+	if (c->total_shares == 0) return -1;
+
+	// exclude cash from value
+	Money value = CalculateCompanyValue(c) - c->money;
 
 	// determine profit in last 4 quarters, including current
 	Money profit = c->cur_economy.income - c->cur_economy.expenses;
@@ -166,74 +169,102 @@ Money CalculateCompanySharePrice(Company *c, bool update)
 	// perform share price calculation
 	Money share_price = (value + 5 * profit) / (num_public_shares + num_other_player_shares / 2);
 
-	// re-calculate share price based on company assets
-	Money bankrupt_value = CalculateCompanyValue(c, false);
+	// handle bankruptcy
 	if (c->months_of_bankruptcy > 0) {
+		// value is based on assets and excludes debt
+		Money bankrupt_value = CalculateCompanyValue(c, false);
+
+		// exclude cash if they have any
+		if (c->money > 0) {
+			bankrupt_value -= c->money;
+		}
 		share_price = bankrupt_value / (num_public_shares + num_other_player_shares / 2);
-	}
-
-	if (update) {
-		// if above 100 do a stock split
-		if (share_price > 100) {
-			uint num_splits = CeilDiv((uint32)share_price, 100);
-			c->total_shares *= num_splits;
-
-			// TODO double shares for each owner
-			// num_other_player_shares *= 2
-
-			// create a news item
-			CompanyNewsInformation *cni = MallocT<CompanyNewsInformation>(1);
-			cni->FillData(c);
-			SetDParam(0, STR_NEWS_COMPANY_STOCK_SPLIT_TITLE);
-			SetDParam(1, STR_NEWS_COMPANY_STOCK_SPLIT_DESCRIPTION);
-			SetDParamStr(2, cni->company_name);
-			SetDParam(3, share_price);
-			SetDParam(4, num_splits);
-			SetDParamStr(5, cni->president_name);
-			AddCompanyNewsItem(STR_MESSAGE_NEWS_FORMAT, cni);
-		}
-
-		// if below 2 do a stock merge - only if we have enough shares to do so
-		if (share_price < 2 && c->total_shares >= 2000) {
-			// preserve current price and halve shares until we get above 2, if we can keep number of shares above 1000
-			Money new_share_price = share_price;
-			uint num_merges = 0;
-			while (new_share_price < 2 && c->total_shares >= 2000) {
-				c->total_shares = CeilDiv(c->total_shares, 2);
-				num_merges++;
-
-				// TODO halve shares for each owner
-				// num_other_player_shares = CeilDiv(num_other_player_shares, 2);
-
-				// TODO determine how the shares are distributed, need public shares and number of shares owned by other players
-				num_public_shares = c->total_shares;
-				num_other_player_shares = 0;
-
-				// re-calculate price
-				// price will depend on bankruptcy status
-				if (c->months_of_bankruptcy > 0) {
-					new_share_price = bankrupt_value / (num_public_shares + num_other_player_shares / 2);
-				} else {
-					new_share_price = (value + 5 * profit) / (num_public_shares + num_other_player_shares / 2);
-				}
-			}
-
-			// if we merged the stock, create a news item
-			if (num_merges > 0) {
-				CompanyNewsInformation *cni = MallocT<CompanyNewsInformation>(1);
-				cni->FillData(c);
-				SetDParam(0, STR_NEWS_COMPANY_STOCK_MERGE_TITLE);
-				SetDParam(1, STR_NEWS_COMPANY_STOCK_MERGE_DESCRIPTION);
-				SetDParamStr(2, cni->company_name);
-				SetDParam(3, num_merges + 1);
-				SetDParamStr(4, cni->president_name);
-				AddCompanyNewsItem(STR_MESSAGE_NEWS_FORMAT, cni);
-			}
-		}
 	}
 
 	// share price can't be 0
 	return max(share_price, (Money)1);
+}
+
+/**
+ * Every quarter we will split or merge stock if it is outside of bounds [2, 100]
+ * @param c the company in question
+ */
+void UpdateCompanyShareStructure(Company *c)
+{
+	Money share_price = CalculateCompanySharePrice(c);
+
+	if (share_price <= 1) return;
+
+	// if above 100 do a stock split
+	if (share_price > 100) {
+		uint num_splits = CeilDiv((uint32)share_price, 100);
+		c->total_shares *= num_splits;
+
+		// TODO double shares for each owner
+		// num_other_player_shares *= 2
+
+		// create a news item
+		CompanyNewsInformation *cni = MallocT<CompanyNewsInformation>(1);
+		cni->FillData(c);
+		SetDParam(0, STR_NEWS_COMPANY_STOCK_SPLIT_TITLE);
+		SetDParam(1, STR_NEWS_COMPANY_STOCK_SPLIT_DESCRIPTION);
+		SetDParamStr(2, cni->company_name);
+		SetDParam(3, share_price);
+		SetDParam(4, num_splits);
+		SetDParamStr(5, cni->president_name);
+		AddCompanyNewsItem(STR_MESSAGE_NEWS_FORMAT, cni);
+	}
+
+	// if below 2 do a stock merge - only if we have enough shares to do so
+	if (share_price < 2 && c->total_shares >= 2000) {
+		// store company values for loop...
+		Money value = CalculateCompanyValue(c) - c->money;
+		Money bankrupt_value = CalculateCompanyValue(c, false);
+		if (c->money > 0) {
+			bankrupt_value -= c->money;
+		}
+
+		// determine profit in last 4 quarters, including current
+		Money profit = c->cur_economy.income - c->cur_economy.expenses;
+		for (uint quarter = 0; quarter < 3; quarter++) {
+			profit += (c->old_economy[quarter].income - c->old_economy[quarter].expenses);
+		}
+
+		// preserve current price and halve shares until we get above 2, if we can keep number of shares above 1000
+		Money new_share_price = share_price;
+		uint num_merges = 0;
+		while (new_share_price < 2 && c->total_shares >= 2000) {
+			c->total_shares = CeilDiv(c->total_shares, 2);
+			num_merges++;
+
+			// TODO halve shares for each owner
+			// num_other_player_shares = CeilDiv(num_other_player_shares, 2);
+
+			// TODO determine how the shares are distributed, need public shares and number of shares owned by other players
+			uint32 num_public_shares = c->total_shares;
+			uint32 num_other_player_shares = 0;
+
+			// re-calculate price
+			// price will depend on bankruptcy status
+			if (c->months_of_bankruptcy > 0) {
+				new_share_price = bankrupt_value / (num_public_shares + num_other_player_shares / 2);
+			} else {
+				new_share_price = (value + 5 * profit) / (num_public_shares + num_other_player_shares / 2);
+			}
+		}
+
+		// if we merged the stock, create a news item
+		if (num_merges > 0) {
+			CompanyNewsInformation *cni = MallocT<CompanyNewsInformation>(1);
+			cni->FillData(c);
+			SetDParam(0, STR_NEWS_COMPANY_STOCK_MERGE_TITLE);
+			SetDParam(1, STR_NEWS_COMPANY_STOCK_MERGE_DESCRIPTION);
+			SetDParamStr(2, cni->company_name);
+			SetDParam(3, num_merges + 1);
+			SetDParamStr(4, cni->president_name);
+			AddCompanyNewsItem(STR_MESSAGE_NEWS_FORMAT, cni);
+		}
+	}
 }
 
 /**
@@ -369,7 +400,8 @@ int UpdateCompanyRatingAndValue(Company *c, bool update)
 		c->old_economy[0].performance_history = score;
 		UpdateCompanyHQ(c->location_of_HQ, score);
 		c->old_economy[0].company_value = CalculateCompanyValue(c);
-		c->old_economy[0].share_price = CalculateCompanySharePrice(c, update);
+		c->old_economy[0].share_price = CalculateCompanySharePrice(c);
+		UpdateCompanyShareStructure(c);
 	}
 
 	SetWindowDirty(WC_PERFORMANCE_DETAIL, 0);

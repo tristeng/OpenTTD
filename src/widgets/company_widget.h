@@ -25,6 +25,9 @@ enum CompanyWidgets {
 	WID_C_DESC_VEHICLE,               ///< Vehicles.
 	WID_C_DESC_VEHICLE_COUNTS,        ///< Vehicle count.
 	WID_C_DESC_COMPANY_VALUE,         ///< Company value.
+	WID_C_DESC_COMPANY_SHARE_PRICE,   ///< Share price.
+	WID_C_DESC_COMPANY_TOTAL_SHARES,  ///< Shares outstanding.
+	WID_C_DESC_COMPANY_MARKET_CAP,    ///< Market capitalization.
 	WID_C_DESC_INFRASTRUCTURE,        ///< Infrastructure.
 	WID_C_DESC_INFRASTRUCTURE_COUNTS, ///< Infrastructure count.
 
@@ -75,6 +78,11 @@ enum CompanyFinancesWidgets {
 	WID_CF_INCREASE_LOAN,  ///< Increase loan.
 	WID_CF_REPAY_LOAN,     ///< Decrease loan..
 	WID_CF_INFRASTRUCTURE, ///< View company infrastructure.
+	WID_CF_SHARES_OUT,     ///< Shares oustanding.
+	WID_CF_SHARE_PRICE,    ///< Share price.
+	WID_CF_SEL_SH_BUTTONS, ///< Selection of shares buttons.
+	WID_CF_ISSUE_SHARES,   ///< Issue more shares.
+	WID_CF_BUYBACK_SHARES, ///< Buyback outstanding shares.
 };
 
 

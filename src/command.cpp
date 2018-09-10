@@ -199,6 +199,9 @@ CommandProc CmdSetTimetableStart;
 
 CommandProc CmdOpenCloseAirport;
 
+CommandProc CmdIssueShares;
+CommandProc CmdBuybackShares;
+
 #define DEF_CMD(proc, flags, type) {proc, #proc, (CommandFlags)flags, type}
 
 /**
@@ -356,6 +359,9 @@ static const Command _command_proc_table[] = {
 	DEF_CMD(CmdSetTimetableStart,                              0, CMDT_ROUTE_MANAGEMENT      ), // CMD_SET_TIMETABLE_START
 
 	DEF_CMD(CmdOpenCloseAirport,                               0, CMDT_ROUTE_MANAGEMENT      ), // CMD_OPEN_CLOSE_AIRPORT
+
+	DEF_CMD(CmdIssueShares,                                    0, CMDT_MONEY_MANAGEMENT      ), // CMD_ISSUE_SHARES
+	DEF_CMD(CmdBuybackShares,                                  0, CMDT_MONEY_MANAGEMENT      ), // CMD_BUYBACK_SHARES
 };
 
 /*!

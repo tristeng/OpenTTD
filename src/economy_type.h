@@ -191,6 +191,9 @@ struct PriceBaseSpec {
 /** The "steps" in loan size, in British Pounds! */
 static const int LOAN_INTERVAL = 10000;
 
+/** The "steps" in share size */
+static const int SHARE_INTERVAL = 1000;
+
 /**
  * Maximum inflation (including fractional part) without causing overflows in int64 price computations.
  * This allows for 32 bit base prices (21 are currently needed).

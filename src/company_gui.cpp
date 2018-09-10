@@ -266,6 +266,26 @@ static const NWidgetPart _nested_company_finances_widgets[] = {
 			NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_CF_INFRASTRUCTURE), SetFill(1, 0), SetDataTip(STR_FINANCES_INFRASTRUCTURE_BUTTON, STR_COMPANY_VIEW_INFRASTRUCTURE_TOOLTIP),
 		EndContainer(),
 	EndContainer(),
+	NWidget(WWT_PANEL, COLOUR_GREY),
+		NWidget(NWID_HORIZONTAL), SetPadding(WD_FRAMERECT_TOP, WD_FRAMERECT_RIGHT, WD_FRAMERECT_BOTTOM, WD_FRAMERECT_LEFT),
+			NWidget(NWID_VERTICAL), // Vertical column with 'share info'
+				NWidget(WWT_TEXT, COLOUR_GREY), SetDataTip(STR_FINANCES_SHARES_OUTSTANDING_TITLE, STR_NULL), SetFill(1, 0),
+				NWidget(WWT_TEXT, COLOUR_GREY), SetDataTip(STR_FINANCES_SHARE_PRICE_TITLE, STR_NULL), SetFill(1, 0),
+				NWidget(NWID_SPACER), SetFill(0, 1),
+			EndContainer(),
+			NWidget(NWID_SPACER), SetFill(0, 0), SetMinimalSize(30, 0),
+			NWidget(NWID_VERTICAL), // Vertical column with share info values
+				NWidget(WWT_TEXT, COLOUR_GREY, WID_CF_SHARES_OUT), SetDataTip(STR_NULL, STR_NULL),
+				NWidget(WWT_TEXT, COLOUR_GREY, WID_CF_SHARE_PRICE), SetDataTip(STR_NULL, STR_NULL),
+			EndContainer(),
+		EndContainer(),
+	EndContainer(),
+	NWidget(NWID_SELECTION, INVALID_COLOUR, WID_CF_SEL_SH_BUTTONS),
+		NWidget(NWID_HORIZONTAL, NC_EQUALSIZE),
+			NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_CF_ISSUE_SHARES), SetFill(1, 0), SetDataTip(STR_FINANCES_ISSUE_SHARES_BUTTON, STR_FINANCES_ISSUE_SHARES_TOOLTIP),
+			NWidget(WWT_PUSHTXTBTN, COLOUR_GREY, WID_CF_BUYBACK_SHARES), SetFill(1, 0), SetDataTip(STR_FINANCES_BUYBACK_SHARES_BUTTON, STR_FINANCES_BUYBACK_SHARES_TOOLTIP),
+		EndContainer(),
+	EndContainer(),
 };
 
 /**
@@ -301,6 +321,11 @@ struct CompanyFinancesWindow : Window {
 			case WID_CF_INCREASE_LOAN:
 			case WID_CF_REPAY_LOAN:
 				SetDParam(0, LOAN_INTERVAL);
+				break;
+
+			case WID_CF_ISSUE_SHARES:
+			case WID_CF_BUYBACK_SHARES:
+				SetDParam(0, SHARE_INTERVAL);
 				break;
 		}
 	}
@@ -376,6 +401,20 @@ struct CompanyFinancesWindow : Window {
 			case WID_CF_LOAN_LINE:
 				GfxFillRect(r.left, r.top, r.right, r.top, PC_BLACK);
 				break;
+
+			case WID_CF_SHARES_OUT: {
+				const Company *c = Company::Get((CompanyID)this->window_number);
+				SetDParam(0, c->total_shares);
+				DrawString(r.left, r.right, r.top, STR_FINANCES_SHARES_OUTSTANDING, TC_FROMSTRING, SA_RIGHT);
+				break;
+			}
+
+			case WID_CF_SHARE_PRICE: {
+				const Company *c = Company::Get((CompanyID)this->window_number);
+				SetDParam(0, CalculateCompanySharePrice(c));
+				DrawString(r.left, r.right, r.top, STR_FINANCES_SHARE_PRICE, TC_FROMSTRING, SA_RIGHT);
+				break;
+			}
 		}
 	}
 
@@ -392,6 +431,7 @@ struct CompanyFinancesWindow : Window {
 		CompanyID company = (CompanyID)this->window_number;
 		plane = (company != _local_company) ? SZSP_NONE : 0;
 		this->GetWidget<NWidgetStacked>(WID_CF_SEL_BUTTONS)->SetDisplayedPlane(plane);
+		this->GetWidget<NWidgetStacked>(WID_CF_SEL_SH_BUTTONS)->SetDisplayedPlane(plane);
 	}
 
 	virtual void OnPaint()
@@ -419,6 +459,8 @@ struct CompanyFinancesWindow : Window {
 			const Company *c = Company::Get(company);
 			this->SetWidgetDisabledState(WID_CF_INCREASE_LOAN, c->current_loan == _economy.max_loan); // Borrow button only shows when there is any more money to loan.
 			this->SetWidgetDisabledState(WID_CF_REPAY_LOAN, company != _local_company || c->current_loan == 0); // Repay button only shows when there is any more money to repay.
+			this->SetWidgetDisabledState(WID_CF_ISSUE_SHARES, CalculateCompanySharePrice(c) < 10); // Issue shares button only shows if stock price is above 10
+			this->SetWidgetDisabledState(WID_CF_BUYBACK_SHARES, c->total_shares <= 0); // Buyback shares button only shows if shares are available to buy
 		}
 
 		this->DrawWidgets();
@@ -449,6 +491,14 @@ struct CompanyFinancesWindow : Window {
 
 			case WID_CF_INFRASTRUCTURE: // show infrastructure details
 				ShowCompanyInfrastructure((CompanyID)this->window_number);
+				break;
+
+			case WID_CF_ISSUE_SHARES:
+				DoCommandP(0, 0, 0, CMD_ISSUE_SHARES | CMD_MSG(STR_ERROR_CAN_T_ISSUE_SHARES));
+				break;
+
+			case WID_CF_BUYBACK_SHARES:
+				DoCommandP(0, 0, 0, CMD_BUYBACK_SHARES | CMD_MSG(STR_ERROR_CAN_T_BUYBACK_SHARES));
 				break;
 		}
 	}
@@ -1924,7 +1974,12 @@ static const NWidgetPart _nested_company_widgets[] = {
 						NWidget(NWID_SPACER), SetFill(0, 1),
 					EndContainer(),
 				EndContainer(),
-				NWidget(WWT_TEXT, COLOUR_GREY, WID_C_DESC_COMPANY_VALUE), SetDataTip(STR_COMPANY_VIEW_COMPANY_VALUE, STR_NULL), SetFill(1, 0),
+				NWidget(NWID_VERTICAL), SetPIP(4, 5, 5),
+					NWidget(WWT_TEXT, COLOUR_GREY, WID_C_DESC_COMPANY_VALUE), SetDataTip(STR_COMPANY_VIEW_COMPANY_VALUE, STR_NULL), SetFill(1, 0),
+					NWidget(WWT_TEXT, COLOUR_GREY, WID_C_DESC_COMPANY_SHARE_PRICE), SetDataTip(STR_COMPANY_VIEW_SHARE_PRICE, STR_NULL), SetFill(1, 0),
+					NWidget(WWT_TEXT, COLOUR_GREY, WID_C_DESC_COMPANY_TOTAL_SHARES), SetDataTip(STR_COMPANY_VIEW_TOTAL_SHARES, STR_NULL), SetFill(1, 0),
+					NWidget(WWT_TEXT, COLOUR_GREY, WID_C_DESC_COMPANY_MARKET_CAP), SetDataTip(STR_COMPANY_VIEW_MARKET_CAP, STR_NULL), SetFill(1, 0),
+				EndContainer(),
 					NWidget(NWID_VERTICAL), SetPIP(4, 2, 4),
 						NWidget(NWID_HORIZONTAL), SetPIP(0, 4, 0),
 							NWidget(NWID_VERTICAL),
@@ -2114,6 +2169,21 @@ struct CompanyWindow : Window
 				size->width = GetStringBoundingBox(STR_COMPANY_VIEW_COMPANY_VALUE).width;
 				break;
 
+			case WID_C_DESC_COMPANY_SHARE_PRICE:
+				SetDParam(0, INT64_MAX); // Arguably the maximum share price
+				size->width = GetStringBoundingBox(STR_COMPANY_VIEW_SHARE_PRICE).width;
+				break;
+
+			case WID_C_DESC_COMPANY_TOTAL_SHARES:
+				SetDParam(0, INT32_MAX); // Arguably the maximum number of shares
+				size->width = GetStringBoundingBox(STR_COMPANY_VIEW_TOTAL_SHARES).width;
+				break;
+
+			case WID_C_DESC_COMPANY_MARKET_CAP:
+				SetDParam(0, INT64_MAX); // Arguably the maximum market cap
+				size->width = GetStringBoundingBox(STR_COMPANY_VIEW_MARKET_CAP).width;
+				break;
+
 			case WID_C_DESC_VEHICLE_COUNTS:
 				SetDParamMaxValue(0, 5000); // Maximum number of vehicles
 				for (uint i = 0; i < lengthof(_company_view_vehicle_count_strings); i++) {
@@ -2278,6 +2348,19 @@ struct CompanyWindow : Window
 
 			case WID_C_DESC_COMPANY_VALUE:
 				SetDParam(0, CalculateCompanyValue(Company::Get((CompanyID)this->window_number)));
+				break;
+
+			case WID_C_DESC_COMPANY_SHARE_PRICE:
+				SetDParam(0, CalculateCompanySharePrice(Company::Get((CompanyID)this->window_number)));
+				break;
+
+			case WID_C_DESC_COMPANY_TOTAL_SHARES:
+				SetDParam(0, Company::Get((CompanyID)this->window_number)->total_shares);
+				break;
+
+			case WID_C_DESC_COMPANY_MARKET_CAP:
+				Company *c = Company::Get((CompanyID)this->window_number);
+				SetDParam(0, CalculateCompanySharePrice(c) * c->total_shares);
 				break;
 		}
 	}

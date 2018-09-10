@@ -331,6 +331,9 @@ enum Commands {
 
 	CMD_OPEN_CLOSE_AIRPORT,           ///< open/close an airport to incoming aircraft
 
+	CMD_ISSUE_SHARES,                 ///< issue more public stock
+	CMD_BUYBACK_SHARES,               ///< buyback public stock
+
 	CMD_END,                          ///< Must ALWAYS be on the end of this list!! (period)
 };
 

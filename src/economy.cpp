@@ -155,11 +155,6 @@ Money CalculateCompanySharePrice(const Company *c)
 
 	Money value = CalculateCompanyValue(c);
 
-	// we exclude company cash, unless the company is majority cash
-	if ((value - c->money) > c->money) {
-		value -= - c->money;
-	}
-
 	// determine profit in last 4 quarters, including current
 	Money profit = c->cur_economy.income - c->cur_economy.expenses;
 	for (uint quarter = 0; quarter < 3; quarter++) {
@@ -224,15 +219,7 @@ void UpdateCompanyShareStructure(Company *c)
 		// store company values for loop...
 		Money value = CalculateCompanyValue(c);
 
-		// we exclude company cash, unless the company is majority cash
-		if ((value - c->money) > c->money) {
-			value -= - c->money;
-		}
-
 		Money bankrupt_value = CalculateCompanyValue(c, false);
-		if (c->money > 0) {
-			bankrupt_value -= c->money;
-		}
 
 		// determine profit in last 4 quarters, including current
 		Money profit = c->cur_economy.income - c->cur_economy.expenses;

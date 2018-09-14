@@ -83,6 +83,7 @@ enum CompanyFinancesWidgets {
 	WID_CF_SEL_SH_BUTTONS, ///< Selection of shares buttons.
 	WID_CF_ISSUE_SHARES,   ///< Issue more shares.
 	WID_CF_BUYBACK_SHARES, ///< Buyback outstanding shares.
+	WID_CF_CREDIT_RATING,  ///< Credit rating.
 };
 
 

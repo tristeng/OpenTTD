@@ -3277,6 +3277,13 @@ STR_FINANCES_SHARES_OUTSTANDING_TITLE                           :{BLACK}Shares O
 STR_FINANCES_SHARES_OUTSTANDING                                 :{BLACK}{COMMA}
 STR_FINANCES_SHARE_PRICE_TITLE                                  :{BLACK}Share Price
 STR_FINANCES_SHARE_PRICE                                        :{BLACK}{CURRENCY_LONG}
+STR_FINANCES_CREDIT_RATING_TITLE                                :{BLACK}Credit Rating
+STR_FINANCES_CREDIT_RATING_AAA                                  :{GREEN}AAA
+STR_FINANCES_CREDIT_RATING_AA                                   :{GREEN}AA
+STR_FINANCES_CREDIT_RATING_A                                    :{YELLOW}A
+STR_FINANCES_CREDIT_RATING_B                                    :{YELLOW}B
+STR_FINANCES_CREDIT_RATING_C                                    :{RED}C
+STR_FINANCES_CREDIT_RATING_D                                    :{RED}D
 STR_FINANCES_ISSUE_SHARES_BUTTON                                :{BLACK}Issue {COMMA} shares
 STR_FINANCES_ISSUE_SHARES_TOOLTIP                               :{BLACK}Issue more shares to the public to raise money.
 STR_FINANCES_BUYBACK_SHARES_BUTTON                              :{BLACK}Buyback {COMMA} shares
@@ -4249,7 +4256,7 @@ STR_ERROR_CAN_T_SELL_25_SHARE_IN                                :{WHITE}Can't se
 STR_ERROR_PROTECTED                                             :{WHITE}This company is not old enough to trade shares yet...
 STR_ERROR_CAN_T_ISSUE_SHARES                                    :{WHITE}Can't issue any more shares...
 STR_ERROR_CAN_T_BUYBACK_SHARES                                  :{WHITE}Can't buyback any more shares...
-STR_ERROR_SHARE_PRICE_TOO_LOW                                   :{WHITE}... share price must be greater than {CURRENCY_LONG}
+STR_ERROR_BAD_CREDIT_RATING                                     :{WHITE}... credit rating must be higher than C...
 STR_ERROR_NO_SHARES_AVAILABLE                                   :{WHITE}... no public shares to purchase
 
 # Town related errors

@@ -155,11 +155,8 @@ Money CalculateCompanySharePrice(const Company *c)
 
 	Money value = CalculateCompanyValue(c);
 
-	// determine profit in last 4 quarters, including current
-	Money profit = c->cur_economy.income - c->cur_economy.expenses;
-	for (uint quarter = 0; quarter < 3; quarter++) {
-		profit += (c->old_economy[quarter].income - c->old_economy[quarter].expenses);
-	}
+	// determine profit in previous 4 quarters
+	Money profit = CalculateCompanyProfit(c);
 
 	// TODO determine how the shares are distributed, need public shares and number of shares owned by other players
 	uint32 num_public_shares = c->total_shares;
@@ -221,11 +218,8 @@ void UpdateCompanyShareStructure(Company *c)
 
 		Money bankrupt_value = CalculateCompanyValue(c, false);
 
-		// determine profit in last 4 quarters, including current
-		Money profit = c->cur_economy.income - c->cur_economy.expenses;
-		for (uint quarter = 0; quarter < 3; quarter++) {
-			profit += (c->old_economy[quarter].income - c->old_economy[quarter].expenses);
-		}
+		// determine profit in previous 4 quarters
+		Money profit = CalculateCompanyProfit(c);
 
 		// preserve current price and halve shares until we get above 2, if we can keep number of shares above 1000
 		Money new_share_price = share_price;
@@ -262,6 +256,81 @@ void UpdateCompanyShareStructure(Company *c)
 			AddCompanyNewsItem(STR_MESSAGE_NEWS_FORMAT, cni);
 		}
 	}
+}
+
+/**
+ * calculates the company profit in the last specified quarters
+ * @param c company being evaluated
+ * @param num_quarters the number of previous quarters, defaults to 4 (1 year of profit, excluding current quarter)
+ * @return the profit over the specified quarters
+ */
+Money CalculateCompanyProfit(const Company *c, uint num_quarters)
+{
+	assert(num_quarters < MAX_HISTORY_QUARTERS);
+
+	Money profit = 0;
+	for (uint quarter = 0; quarter < num_quarters; quarter++) {
+		profit += (c->old_economy[quarter].income - c->old_economy[quarter].expenses);
+	}
+
+	return profit;
+}
+
+/**
+ * calculates earnings per share
+ * @param c company being evaluated
+ * @return earnings per share
+ */
+Money CalculateEarningsPerShare(const Company *c)
+{
+	if (c->total_shares == 0) {
+		return -1;
+	}
+
+	Money profit = CalculateCompanyProfit(c);
+	Money dividends = 0; // TODO
+	return RoundDivSU((profit - dividends), c->total_shares);
+}
+
+/**
+ * calculates the credit rating where 0 is the best
+ * @param c company being evaluated
+ * @return 0 for perfect credit rating or positive int for worse credit rating
+ */
+uint CalculateCreditRating(const Company *c)
+{
+	uint rating = 0;
+	Money profit = CalculateCompanyProfit(c);
+	Money value = CalculateCompanyValue(c, false); // without loan
+
+	// if profit is negative, automatically set to C rating
+	if (profit < 0) {
+		rating += CREDIT_RATING_C;
+	} else if (profit == 0) {
+		rating += CREDIT_RATING_B;
+	} else {
+		// if the company makes over 20% profit compared to its value, it won't be penalized
+		uint value_to_profit = CeilDiv(value, profit);
+		if (value_to_profit >= 6) {
+			if (value_to_profit > 100) {
+				rating += 4; // less than equal 1% profit
+			} else if (value_to_profit > 20) {
+				rating += 3; // less than equal 5% profit
+			} else if (value_to_profit > 10) {
+				rating += 2; // less than equal 10% profit
+			} else { // value_to_profit > 5
+				rating += 1; // less than equal 20% profit
+			}
+		}
+	}
+
+	// adjust for debt - for every increment of 1 debt ratio, add on 2 rating points
+	float debt_ratio = (float)(c->current_loan) / (float)value;
+	if (debt_ratio > 0) {
+		rating += (CeilDiv((uint)(debt_ratio * 10), 10) * 2);
+	}
+
+	return rating;
 }
 
 /**

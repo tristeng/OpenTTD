@@ -271,12 +271,14 @@ static const NWidgetPart _nested_company_finances_widgets[] = {
 			NWidget(NWID_VERTICAL), // Vertical column with 'share info'
 				NWidget(WWT_TEXT, COLOUR_GREY), SetDataTip(STR_FINANCES_SHARES_OUTSTANDING_TITLE, STR_NULL), SetFill(1, 0),
 				NWidget(WWT_TEXT, COLOUR_GREY), SetDataTip(STR_FINANCES_SHARE_PRICE_TITLE, STR_NULL), SetFill(1, 0),
+				NWidget(WWT_TEXT, COLOUR_GREY), SetDataTip(STR_FINANCES_CREDIT_RATING_TITLE, STR_NULL), SetFill(1, 0),
 				NWidget(NWID_SPACER), SetFill(0, 1),
 			EndContainer(),
 			NWidget(NWID_SPACER), SetFill(0, 0), SetMinimalSize(30, 0),
 			NWidget(NWID_VERTICAL), // Vertical column with share info values
 				NWidget(WWT_TEXT, COLOUR_GREY, WID_CF_SHARES_OUT), SetDataTip(STR_NULL, STR_NULL),
 				NWidget(WWT_TEXT, COLOUR_GREY, WID_CF_SHARE_PRICE), SetDataTip(STR_NULL, STR_NULL),
+				NWidget(WWT_TEXT, COLOUR_GREY, WID_CF_CREDIT_RATING), SetDataTip(STR_NULL, STR_NULL),
 			EndContainer(),
 		EndContainer(),
 	EndContainer(),
@@ -415,6 +417,33 @@ struct CompanyFinancesWindow : Window {
 				DrawString(r.left, r.right, r.top, STR_FINANCES_SHARE_PRICE, TC_FROMSTRING, SA_RIGHT);
 				break;
 			}
+
+			case WID_CF_CREDIT_RATING:
+				const Company *c = Company::Get((CompanyID)this->window_number);
+				StringID rating;
+				switch (CalculateCreditRating(c)) {
+					case CREDIT_RATING_AAA:
+						rating = STR_FINANCES_CREDIT_RATING_AAA;
+						break;
+					case CREDIT_RATING_AA:
+						rating = STR_FINANCES_CREDIT_RATING_AA;
+						break;
+					case CREDIT_RATING_A:
+						rating = STR_FINANCES_CREDIT_RATING_A;
+						break;
+					case CREDIT_RATING_B:
+						rating = STR_FINANCES_CREDIT_RATING_B;
+						break;
+					case CREDIT_RATING_C:
+						rating = STR_FINANCES_CREDIT_RATING_C;
+						break;
+					case CREDIT_RATING_D:
+					default:
+						rating = STR_FINANCES_CREDIT_RATING_D;
+						break;
+				}
+				DrawString(r.left, r.right, r.top, rating, TC_FROMSTRING, SA_RIGHT);
+				break;
 		}
 	}
 
@@ -459,7 +488,6 @@ struct CompanyFinancesWindow : Window {
 			const Company *c = Company::Get(company);
 			this->SetWidgetDisabledState(WID_CF_INCREASE_LOAN, c->current_loan == _economy.max_loan); // Borrow button only shows when there is any more money to loan.
 			this->SetWidgetDisabledState(WID_CF_REPAY_LOAN, company != _local_company || c->current_loan == 0); // Repay button only shows when there is any more money to repay.
-			this->SetWidgetDisabledState(WID_CF_ISSUE_SHARES, CalculateCompanySharePrice(c) < 10); // Issue shares button only shows if stock price is above 10
 			this->SetWidgetDisabledState(WID_CF_BUYBACK_SHARES, c->total_shares <= 0); // Buyback shares button only shows if shares are available to buy
 		}
 

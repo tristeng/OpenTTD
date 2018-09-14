@@ -175,8 +175,20 @@ struct Company : CompanyPool::PoolItem<&_company_pool>, CompanyProperties {
 Money CalculateCompanyValue(const Company *c, bool including_loan = true);
 Money CalculateCompanySharePrice(const Company *c);
 void UpdateCompanyShareStructure(Company *c);
+Money CalculateCompanyProfit(const Company *c, uint num_quarters = 4);
+Money CalculateEarningsPerShare(const Company *c);
+uint CalculateCreditRating(const Company *c);
 
 extern uint _next_competitor_start;
 extern uint _cur_company_tick_index;
+
+enum CreditRating {
+	CREDIT_RATING_AAA,
+	CREDIT_RATING_AA,
+	CREDIT_RATING_A,
+	CREDIT_RATING_B,
+	CREDIT_RATING_C,
+	CREDIT_RATING_D,
+};
 
 #endif /* COMPANY_BASE_H */

@@ -47,6 +47,10 @@ CommandCost CmdIncreaseLoan(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 		return_cmd_error(STR_ERROR_MAXIMUM_PERMITTED_LOAN);
 	}
 
+	if (CalculateCreditRating(c) > CREDIT_RATING_B) {
+		return_cmd_error(STR_ERROR_BAD_CREDIT_RATING);
+	}
+
 	Money loan;
 	switch (p2) {
 		default: return CMD_ERROR; // Invalid method
@@ -291,10 +295,8 @@ CommandCost CmdIssueShares(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 	Money share_price = CalculateCompanySharePrice(c);
 
-	// TODO: we should calculate a credit rating and use that instead of share price...
-	if (share_price < 10) {
-		SetDParam(0, 10);
-		return_cmd_error(STR_ERROR_SHARE_PRICE_TOO_LOW);
+	if (CalculateCreditRating(c) > CREDIT_RATING_B) {
+		return_cmd_error(STR_ERROR_BAD_CREDIT_RATING);
 	}
 
 	uint32 shares;
